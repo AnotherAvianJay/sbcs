@@ -127,9 +127,6 @@ async function consume(this: WebSocket, opts: EventOpts) {
 
 	// subscription managment
 	switch (event) {
-		case "GUILD_MEMBER_REMOVE":
-			this.member_events[data.user.id]?.();
-			delete this.member_events[data.user.id];
 		case "GUILD_MEMBER_ADD":
 			if (this.member_events[data.user.id]) break; // already subscribed
 			this.member_events[data.user.id] = await listenEvent(
@@ -139,8 +136,10 @@ async function consume(this: WebSocket, opts: EventOpts) {
 			);
 			break;
 		case "GUILD_MEMBER_REMOVE":
-			if (!this.member_events[data.user.id]) break;
-			this.member_events[data.user.id]();
+			if (this.member_events[data.user.id]) {
+				this.member_events[data.user.id]();
+				delete this.member_events[data.user.id];
+			}
 			break;
 		case "RELATIONSHIP_REMOVE":
 		case "CHANNEL_DELETE":

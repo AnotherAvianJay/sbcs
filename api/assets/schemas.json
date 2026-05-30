@@ -406,6 +406,55 @@
         },
         "$schema": "http://json-schema.org/draft-07/schema#"
     },
+    "ApplicationCreateSchema": {
+        "type": "object",
+        "properties": {
+            "name": {
+                "type": "string"
+            },
+            "icon": {
+                "anyOf": [
+                    { "type": "string" },
+                    { "type": "null" }
+                ]
+            },
+            "description": {
+                "type": "string"
+            },
+            "bot_public": {
+                "type": "boolean"
+            },
+            "bot_require_code_grant": {
+                "type": "boolean"
+            }
+        },
+        "required": ["name"],
+        "additionalProperties": false
+    },
+    "ApplicationModifySchema": {
+        "type": "object",
+        "properties": {
+            "name": {
+                "type": "string"
+            },
+            "icon": {
+                "anyOf": [
+                    { "type": "string" },
+                    { "type": "null" }
+                ]
+            },
+            "description": {
+                "type": "string"
+            },
+            "bot_public": {
+                "type": "boolean"
+            },
+            "bot_require_code_grant": {
+                "type": "boolean"
+            }
+        },
+        "additionalProperties": false
+    },
     "RouteResponse": {
         "type": "object",
         "properties": {
