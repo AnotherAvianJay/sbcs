@@ -138,7 +138,7 @@
 				CDN_HOST: `${location.host}`,
 				ASSET_ENDPOINT: "",
 				MEDIA_PROXY_ENDPOINT: "https://media.discordapp.net",
-				IMAGE_PROXY_ENDPOINTS: [location.protocol + "//" + location.host],
+				IMAGE_PROXY_ENDPOINTS: location.protocol + "//" + location.host,
 				WIDGET_ENDPOINT: `//${location.host}/widget`,
 				INVITE_HOST: `${location.hostname}/invite`,
 				GUILD_TEMPLATE_HOST: "${location.host}",

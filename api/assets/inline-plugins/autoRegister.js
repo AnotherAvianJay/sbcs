@@ -1,4 +1,5 @@
 // Auto register guest account:
+(function() {
 const prefix = [
 	"mysterious",
 	"adventurous",
@@ -60,3 +61,4 @@ if (!token && location.pathname !== "/login" && location.pathname !== "/register
 			}
 		});
 }
+})();
