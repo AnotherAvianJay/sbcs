@@ -1,5 +1,5 @@
 import { Request, Response, Router } from "express";
-import { route, check } from "@fosscord/api";
+import { route } from "@fosscord/api";
 import { Application, Snowflake, Config, User, emitEvent, defaultSettings } from "@fosscord/util";
 import bcrypt from "bcrypt";
 
@@ -155,7 +155,7 @@ router.post("/:id/bot", route({ right: "CREATE_APPLICATIONS" }), async (req: Req
 	botUser.username = app.name;
 	botUser.discriminator = "0000";
 	botUser.bot = true;
-	botUser.avatar = app.icon || null;
+	botUser.avatar = app.icon || undefined;
 	botUser.bio = app.description || "";
 	botUser.system = false;
 	botUser.created_at = new Date();
