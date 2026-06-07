@@ -12,6 +12,7 @@ export enum PublicUserEnum {
 	discriminator,
 	id,
 	public_flags,
+	flags,
 	avatar,
 	accent_color,
 	banner,

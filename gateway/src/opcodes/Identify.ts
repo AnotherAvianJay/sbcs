@@ -123,9 +123,10 @@ export async function onIdentify(this: WebSocket, data: Payload) {
 		return [
 			{
 				...x,
-				roles: x.roles.map((x) => x.id),
+				roles: x.roles?.map((x) => x.id) || [],
 				settings: undefined,
 				guild: undefined,
+				user: x.user ? { ...x.user.toPublicUser() } : undefined,
 			},
 		];
 	}) as PublicMember[][];
@@ -165,17 +166,8 @@ export async function onIdentify(this: WebSocket, data: Payload) {
 
 	for (let relation of user.relationships) {
 		const related_user = relation.to;
-		const public_related_user = {
-			username: related_user.username,
-			discriminator: related_user.discriminator,
-			id: related_user.id,
-			public_flags: related_user.public_flags,
-			avatar: related_user.avatar,
-			bot: related_user.bot,
-			bio: related_user.bio,
-			premium_since: user.premium_since
-		};
-		users.push(public_related_user);
+		if (!related_user) continue; // skip if related user doesn't exist
+		users.push(related_user.toPublicUser());
 	}
 
 	setImmediate(async () => {
