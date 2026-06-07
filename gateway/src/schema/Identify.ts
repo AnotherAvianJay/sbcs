@@ -35,6 +35,7 @@ export const IdentifySchema = {
 	$large_threshold: Number,
 	$shard: [BigInt, BigInt],
 	$guild_subscriptions: Boolean,
+	$guild_versions: Object,
 	$capabilities: Number,
 	$client_state: {
 		$guild_hashes: Object,
@@ -77,6 +78,7 @@ export interface IdentifySchema {
 	large_threshold?: number;
 	shard?: [bigint, bigint];
 	guild_subscriptions?: boolean;
+	guild_versions?: any;
 	capabilities?: number;
 	client_state?: {
 		guild_hashes?: any;
