@@ -111,7 +111,7 @@
 		<div id="app-mount"></div>
 		<script>
 			window.__OVERLAY__ = /overlay/.test(location.pathname);
-			window.__BILLING_STANDALONE__ = /^/billing/.test(location.pathname);
+			window.__BILLING_STANDALONE__ = /^\/billing/.test(location.pathname);
 			// Fix webpack chunk loading path for SPA routes
 			// Set before webpack loads to prevent undefined chunks
 			Object.defineProperty(window, '__webpack_public_path__', {
@@ -138,18 +138,25 @@
 				CDN_HOST: `${location.host}`,
 				ASSET_ENDPOINT: "",
 				MEDIA_PROXY_ENDPOINT: "https://media.discordapp.net",
+				IMAGE_PROXY_ENDPOINTS: {},
 				WIDGET_ENDPOINT: `//${location.host}/widget`,
 				INVITE_HOST: `${location.hostname}/invite`,
 				GUILD_TEMPLATE_HOST: "${location.host}",
 				GIFT_CODE_HOST: "${location.hostname}",
 				RELEASE_CHANNEL: "stable",
+				DEVELOPERS_ENDPOINT: `${location.protocol}//${location.host}/developers`,
 				MARKETING_ENDPOINT: "//discord.com",
 				BRAINTREE_KEY: "production_5st77rrc_49pp2rp4phym7387",
 				STRIPE_KEY: "pk_live_CUQtlpQUF0vufWpnpUmQvcdi",
+				ADYEN_KEY: "",
 				NETWORKING_ENDPOINT: "//router.discordapp.net",
 				RTC_LATENCY_ENDPOINT: "//${location.hostname}/rtc",
 				PROJECT_ENV: "production",
 				REMOTE_AUTH_ENDPOINT: "//localhost:3020",
+				ACTIVITY_APPLICATION_HOST: `${location.hostname}`,
+				MUX_ENV_KEY: "",
+				WEBAUTHN_ORIGIN: `${location.protocol}//${location.host}`,
+				NATIVE_WEBSOCKET_ORIGIN: `${location.protocol}//${location.host}`,
 				SENTRY_TAGS: { buildId: "75e36d9", buildType: "normal" },
 				MIGRATION_SOURCE_ORIGIN: "https://${location.hostname}",
 				MIGRATION_DESTINATION_ORIGIN: "https://${location.hostname}",
