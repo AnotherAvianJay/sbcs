@@ -1,6 +1,7 @@
 
 /* loading spinner */
-#app-mount > div.app-1q1i1E > div.container-16j22k.fixClipping-3qAKRb > div.content-1-zrf2 > video {
+#app-mount [class*="app_"] [class*="container_"][class*="fixClipping_"] [class*="content_"] > video,
+#app-mount video[poster*="loading"] {
 	filter: opacity(1);
 	background: url("http://www.clipartbest.com/cliparts/7ca/6Rr/7ca6RrLAi.gif");
 	background-size: contain;
@@ -11,36 +12,36 @@
 }
 
 /* home button icon */
-#app-mount > div.app-1q1i1E > div > div.layers-3iHuyZ.layers-3q14ss > div > div > nav > ul > div.scroller-1Bvpku.none-2Eo-qx.scrollerBase-289Jih > div.tutorialContainer-2sGCg9 > div > div.listItemWrapper-KhRmzM > div > svg > foreignObject > div > div
+[class*="tutorialContainer_"] [class*="listItemWrapper_"] [class*="childWrapper_"],
+[class*="tutorialContainer_"] [class*="listItemWrapper_"] foreignObject div div
 {
     background-image: url(https://raw.githubusercontent.com/fosscord/fosscord/master/assets-rebrand/svg/Fosscord-Icon-Rounded-Subtract.svg);
     background-size: contain;
     border-radius: 50%;
 }
 
-#app-mount > div.app-1q1i1E > div > div.layers-3iHuyZ.layers-3q14ss > div > div > nav > ul > div.scroller-1Bvpku.none-2Eo-qx.scrollerBase-289Jih > div.tutorialContainer-2sGCg9 > div > div.listItemWrapper-KhRmzM > div > svg > foreignObject > div > div, #app-mount > div.app-1q1i1E > div > div.layers-3iHuyZ.layers-3q14ss > div > div > nav > ul > div.scroller-1Bvpku.none-2Eo-qx.scrollerBase-289Jih > div.tutorialContainer-2sGCg9 > div > div.listItemWrapper-KhRmzM > div > svg > foreignObject > div > div:hover {
+[class*="tutorialContainer_"] [class*="listItemWrapper_"] [class*="childWrapper_"],
+[class*="tutorialContainer_"] [class*="listItemWrapper_"] foreignObject div div,
+[class*="tutorialContainer_"] [class*="listItemWrapper_"] [class*="childWrapper_"]:hover,
+[class*="tutorialContainer_"] [class*="listItemWrapper_"] foreignObject div div:hover {
 	background-color: white;
 }
 /* Login QR */
-#app-mount > div.app-1q1i1E > div > div > div > div > form > div > div > div.transitionGroup-aR7y1d.qrLogin-1AOZMt,
-#app-mount > div.app-1q1i1E > div > div > div > div > form > div > div > div.verticalSeparator-3huAjp,
-/* Remove login bg */
-#app-mount > div.app-1q1i1E > div > svg,
+[class*="qrLogin_"],
+[class*="verticalSeparator_"],
+/* Remove login bg and default logos */
+[class*="characterBackground_"] > [class*="artwork_"],
+[class*="characterBackground_"] > [class*="logoWithText_"],
 /* Download bar */
-#app-mount > div.app-1q1i1E > div > div.layers-3iHuyZ.layers-3q14ss > div > div > div > div.notice-3bPHh-.colorDefault-22HBa0,
+[class*="notice_"][class*="colorDefault_"],
 /* Connection problem links */
-#app-mount > div.app-1q1i1E > div.container-16j22k.fixClipping-3qAKRb > div.problems-3mgf6w.slideIn-sCvzGz > div:nth-child(2),
-/* Downloads button */
-#app-mount > div.app-1q1i1E > div > div.layers-3iHuyZ.layers-3q14ss > div > div > nav > ul > div.scroller-1Bvpku.none-2Eo-qx.scrollerBase-289Jih > div:nth-child(7) > div.listItemWrapper-KhRmzM > div > svg > foreignObject > div,
-#app-mount > div.app-1q1i1E > div > div.layers-3iHuyZ.layers-3q14ss > div > div > nav > ul > div.scroller-1Bvpku.none-2Eo-qx.scrollerBase-289Jih > div:nth-child(6) > div,
+[class*="problems_"] > div:nth-child(2),
 /* help button */
-#app-mount > div.app-1q1i1E > div > div.layers-3iHuyZ.layers-3q14ss > div > div > div > div.content-98HsJk > div.chat-3bRxxu > section > div.toolbar-1t6TWx > a,
+[class*="toolbar_"] a[href*="support.discord.com"],
 /* download button start of guild */
-#chat-messages-899316648933185083 > div > div > div:nth-child(5),
-/* Thread permissions etc popups */
-#app-mount > div.app-1q1i1E > div > div.layers-3iHuyZ.layers-3q14ss > div > div > div > div.content-98HsJk > div.sidebar-2K8pFh.hasNotice-1XRy4h > nav > div.container-3O_wAf,
-/* home button icon */
-#app-mount > div.app-1q1i1E > div > div.layers-3iHuyZ.layers-3q14ss > div > div > nav > ul > div.scroller-1Bvpku.none-2Eo-qx.scrollerBase-289Jih > div.tutorialContainer-2sGCg9 > div > div.listItemWrapper-KhRmzM > div > svg > foreignObject > div > div > svg
+[class*="chatContent_"] [class*="container_"] a[href*="discord.com/api/downloads"],
+/* home button icon default svg */
+[class*="tutorialContainer_"] [class*="listItemWrapper_"] [class*="childWrapper_"] > svg
 {
-    display: none;
+    display: none !important;
 }
