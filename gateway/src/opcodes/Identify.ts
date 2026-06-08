@@ -198,7 +198,10 @@ export async function onIdentify(this: WebSocket, data: Payload) {
 			event: "PRESENCE_UPDATE",
 			user_id: this.user_id,
 			data: {
-				user: await User.getPublicUser(this.user_id),
+				user: await User.findOneOrFail({
+				where: { id: this.user_id },
+				select: PublicUserProjection,
+			}).then(u => u.toPublicUser()),
 				activities: session.activities,
 				client_status: session?.client_info,
 				status: session.status,
