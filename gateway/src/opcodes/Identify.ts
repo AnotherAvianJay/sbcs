@@ -168,7 +168,7 @@ export async function onIdentify(this: WebSocket, data: Payload) {
 
 	const channels = recipients.map((x) => {
 		// @ts-ignore
-		x.channel.recipients = x.channel.recipients?.map((x) => x.user);
+		x.channel.recipients = x.channel.recipients?.map((x) => x.user?.toPublicUser ? x.user.toPublicUser() : x.user);
 		//TODO is this needed? check if users in group dm that are not friends are sent in the READY event
 		users = users.concat(x.channel.recipients as unknown as User[]);
 		if (x.channel.isDm()) {
@@ -181,7 +181,7 @@ export async function onIdentify(this: WebSocket, data: Payload) {
 
 	for (let relation of user.relationships) {
 		const related_user = relation.to;
-		if (!related_user) continue; // skip if related user doesn't exist
+		if (!related_user || !related_user.toPublicUser) continue; // skip if related user doesn't exist
 		users.push(related_user.toPublicUser());
 	}
 
@@ -222,14 +222,14 @@ export async function onIdentify(this: WebSocket, data: Payload) {
 		desktop: user.desktop,
 		discriminator: user.discriminator,
 		email: user.email,
-		flags: user.flags,
+		flags: user.flags || "0",
 		id: user.id,
 		mfa_enabled: user.mfa_enabled,
 		nsfw_allowed: user.nsfw_allowed,
 		phone: user.phone,
 		premium: user.premium,
 		premium_type: user.premium_type,
-		public_flags: user.public_flags,
+		public_flags: user.public_flags ?? 0,
 		username: user.username,
 		verified: user.verified,
 		bot: user.bot,

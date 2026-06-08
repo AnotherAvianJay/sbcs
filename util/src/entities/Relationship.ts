@@ -39,11 +39,12 @@ export class Relationship extends BaseClass {
 	type: RelationshipType;
 
 	toPublicRelationship() {
+		const targetUser = this.to;
 		return {
-			id: this.to?.id || this.to_id,
+			id: targetUser?.id || this.to_id,
 			type: this.type,
 			nickname: this.nickname,
-			user: this.to?.toPublicUser(),
+			user: targetUser?.toPublicUser ? targetUser.toPublicUser() : undefined,
 		};
 	}
 }
