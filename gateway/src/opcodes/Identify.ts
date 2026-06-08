@@ -166,18 +166,23 @@ export async function onIdentify(this: WebSocket, data: Payload) {
 
 	const user_guild_settings_entries = members.map((x) => x.settings);
 
-	const channels = recipients.map((x) => {
-		// @ts-ignore
-		x.channel.recipients = x.channel.recipients?.map((x) => x.user?.toPublicUser ? x.user.toPublicUser() : x.user);
-		//TODO is this needed? check if users in group dm that are not friends are sent in the READY event
-		users = users.concat(x.channel.recipients as unknown as User[]);
-		if (x.channel.isDm()) {
-			x.channel.recipients = x.channel.recipients!.filter(
-				(x) => x.id !== this.user_id
-			);
-		}
-		return x.channel;
-	});
+	const channels = recipients
+		.filter((x) => x.channel) // filter out recipients without channel
+		.map((x) => {
+			// @ts-ignore
+			const channelRecipients = x.channel.recipients || [];
+			x.channel.recipients = channelRecipients
+				.map((r: any) => r.user?.toPublicUser ? r.user.toPublicUser() : r.user)
+				.filter((u: any) => u && u.id); // filter out invalid users
+			//TODO is this needed? check if users in group dm that are not friends are sent in the READY event
+			users = users.concat(x.channel.recipients as unknown as User[]);
+			if (x.channel.isDm && x.channel.isDm()) {
+				x.channel.recipients = x.channel.recipients!.filter(
+					(u: any) => u.id !== this.user_id
+				);
+			}
+			return x.channel;
+		});
 
 	for (let relation of user.relationships) {
 		const related_user = relation.to;
@@ -274,7 +279,7 @@ export async function onIdentify(this: WebSocket, data: Payload) {
 				consented: false, // TODO
 			},
 		},
-		country_code: user.settings.locale,
+		country_code: user.settings?.locale || "zh-TW",
 		friend_suggestion_count: 0, // TODO
 		// @ts-ignore
 		experiments: experiments, // TODO
