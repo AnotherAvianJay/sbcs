@@ -122,11 +122,16 @@ export async function onIdentify(this: WebSocket, data: Payload) {
 	const merged_members = members.map((x: Member) => {
 		return [
 			{
-				...x,
-				roles: x.roles?.map((x) => x.id) || [],
-				settings: undefined,
-				guild: undefined,
-				user: x.user ? { ...x.user.toPublicUser() } : undefined,
+				id: x.id,
+				guild_id: x.guild_id,
+				nick: x.nick,
+				roles: x.roles?.map((r) => r.id) || [],
+				joined_at: x.joined_at,
+				pending: x.pending,
+				deaf: x.deaf,
+				mute: x.mute,
+				premium_since: x.premium_since,
+				user: x.user ? x.user.toPublicUser() : undefined,
 			},
 		];
 	}) as PublicMember[][];

@@ -118,8 +118,26 @@
 				get: function() { return "/assets/"; },
 				set: function() { return "/assets/"; },
 				configurable: false
-			});
-			// Also patch __webpack_require__.p after webpack loads
+			});		// Intercept WebSocket to log Identify payload
+		(function() {
+			var OriginalWebSocket = window.WebSocket;
+			window.WebSocket = function(url, protocols) {
+				var ws = protocols ? new OriginalWebSocket(url, protocols) : new OriginalWebSocket(url);
+				var origSend = ws.send.bind(ws);
+				ws.send = function(data) {
+					if (typeof data === 'string') {
+						try {
+							var parsed = JSON.parse(data);
+							if (parsed.op === 2) {
+								console.log('[WS INTERCEPT] Identify payload:', JSON.stringify(parsed.d, null, 2));
+							}
+						} catch(e) {}
+					}
+					return origSend(data);
+				};
+				return ws;
+			};
+		})();			// Also patch __webpack_require__.p after webpack loads
 			(function() {
 				var originalDefineProperty = Object.defineProperty;
 				Object.defineProperty = function(obj, prop, desc) {
