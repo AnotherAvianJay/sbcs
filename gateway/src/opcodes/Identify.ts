@@ -11,6 +11,7 @@ import {
 	PublicMember,
 	PublicUser,
 	PrivateUserProjection,
+	PublicUserProjection,
 	ReadState,
 	Application,
 	emitEvent,
