@@ -121,6 +121,14 @@ export async function onIdentify(this: WebSocket, data: Payload) {
 	var users: PublicUser[] = [];
 
 	const merged_members = members.map((x: Member) => {
+		const publicUser = x.user?.toPublicUser ? x.user.toPublicUser() : x.user;
+		// Ensure user has flags
+		if (publicUser && (publicUser.flags == null || publicUser.flags === undefined)) {
+			publicUser.flags = "0";
+		}
+		if (publicUser && (publicUser.public_flags == null || publicUser.public_flags === undefined)) {
+			publicUser.public_flags = 0;
+		}
 		return [
 			{
 				id: x.id,
@@ -132,7 +140,7 @@ export async function onIdentify(this: WebSocket, data: Payload) {
 				deaf: x.deaf,
 				mute: x.mute,
 				premium_since: x.premium_since,
-				user: x.user ? x.user.toPublicUser() : undefined,
+				user: publicUser,
 			},
 		];
 	}) as PublicMember[][];
