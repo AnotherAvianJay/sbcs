@@ -144,16 +144,31 @@ export async function onIdentify(this: WebSocket, data: Payload) {
 			},
 		];
 	}) as PublicMember[][];
-	let guilds = members.map((x) => ({
-		...x.guild,
-		joined_at: x.joined_at,
-		// Ensure features is always an array to prevent client errors
-		features: x.guild?.features || [],
-		// Ensure other nullable fields have defaults
-		emojis: x.guild?.emojis || [],
-		stickers: x.guild?.stickers || [],
-		roles: x.guild?.roles || [],
-	})).filter(g => g.id); // filter out null guilds
+	let guilds = members.map((x) => {
+		const guild = x.guild;
+		// Process emojis to ensure user has flags
+		const emojis = guild?.emojis?.map((emoji: any) => {
+			if (emoji.user) {
+				// Convert to public user to ensure flags exists
+				const publicUser = emoji.user.toPublicUser ? emoji.user.toPublicUser() : { ...emoji.user };
+				if (publicUser.flags == null) publicUser.flags = "0";
+				if (publicUser.public_flags == null) publicUser.public_flags = 0;
+				return { ...emoji, user: publicUser };
+			}
+			return emoji;
+		}) || [];
+		
+		return {
+			...guild,
+			joined_at: x.joined_at,
+			// Ensure features is always an array to prevent client errors
+			features: guild?.features || [],
+			// Ensure other nullable fields have defaults
+			emojis: emojis,
+			stickers: guild?.stickers || [],
+			roles: guild?.roles || [],
+		};
+	}).filter(g => g.id); // filter out null guilds
 
 	// @ts-ignore
 	guilds = guilds.map((guild) => {

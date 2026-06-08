@@ -11,24 +11,41 @@ export async function Send(socket: WebSocket, data: Payload) {
 	if (data.t === "READY" && data.d) {
 		const ready = data.d as any;
 		const findMissingFlags = (arr: any[], name: string) => {
-			if (!Array.isArray(arr)) return [];
+			if (!Array.isArray(arr)) {
+				console.log(`[DEBUG] ${name} is not an array:`, typeof arr);
+				return [];
+			}
 			const missing = arr
 				.map((item, idx) => {
 					// Handle merged_members (array of arrays)
 					if (Array.isArray(item)) item = item[0];
 					if (!item) return { idx, reason: "null item" };
+					// Check if user object exists
+					if (item.user === undefined) {
+						return { idx, id: item.id, reason: "user field is undefined" };
+					}
+					if (item.user === null) {
+						return { idx, id: item.id, reason: "user field is null" };
+					}
+					// Check user.flags
 					if (item.user) {
-						if (item.user.flags === undefined || item.user.flags === null) {
-							return { idx, id: item.user.id, reason: "user.flags is null/undefined" };
+						if (item.user.flags === undefined) {
+							return { idx, id: item.user.id || item.id, reason: "user.flags is undefined" };
 						}
-					} else if (item.flags === undefined || item.flags === null) {
-						return { idx, id: item.id, reason: "flags is null/undefined" };
+						if (item.user.flags === null) {
+							return { idx, id: item.user.id || item.id, reason: "user.flags is null" };
+						}
+					} else if (item.flags === undefined) {
+						return { idx, id: item.id, reason: "flags is undefined" };
+					} else if (item.flags === null) {
+						return { idx, id: item.id, reason: "flags is null" };
 					}
 					return null;
 				})
 				.filter(Boolean);
 			if (missing.length > 0) {
-				console.log(`[DEBUG] ${name} items missing flags:`, missing);
+				console.log(`[DEBUG] ${name} items missing flags:`, missing.slice(0, 5));
+				if (missing.length > 5) console.log(`[DEBUG] ... and ${missing.length - 5} more`);
 			}
 			return missing;
 		};
@@ -38,10 +55,15 @@ export async function Send(socket: WebSocket, data: Payload) {
 		const membersMissing = findMissingFlags(ready.merged_members, "merged_members");
 		const relationsMissing = findMissingFlags(ready.relationships, "relationships");
 		const channelsMissing = findMissingFlags(ready.private_channels?.flatMap((c: any) => c.recipients || []), "private_channels.recipients");
+		// Check guilds.members - Discord client may access this
+		const guildMembers = ready.guilds?.flatMap((g: any) => g.members || []) || [];
+		const guildMembersMissing = findMissingFlags(guildMembers, "guilds.members");
+		// Also check guilds.roles? No, roles don't have flags
 		
-		const totalMissing = usersMissing.length + membersMissing.length + relationsMissing.length + channelsMissing.length;
+		const totalMissing = usersMissing.length + membersMissing.length + relationsMissing.length + channelsMissing.length + guildMembersMissing.length;
 		if (totalMissing === 0) {
 			console.log("[DEBUG] All user objects have flags!");
+			console.log("[DEBUG] guilds count:", ready.guilds?.length, "guild members count:", guildMembers.length);
 		} else {
 			console.log(`[DEBUG] Total items missing flags: ${totalMissing}`);
 		}
