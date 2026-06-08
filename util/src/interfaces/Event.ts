@@ -32,7 +32,7 @@ export interface InvalidatedEvent extends Event {
 
 export interface PublicRelationship {
 	id: string;
-	user: PublicUser;
+	user?: PublicUser;
 	type: RelationshipType;
 }
 
