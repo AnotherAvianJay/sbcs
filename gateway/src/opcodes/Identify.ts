@@ -180,7 +180,13 @@ export async function onIdentify(this: WebSocket, data: Payload) {
 			// @ts-ignore
 			const channelRecipients = x.channel.recipients || [];
 			x.channel.recipients = channelRecipients
-				.map((r: any) => r.user?.toPublicUser ? r.user.toPublicUser() : r.user)
+				.map((r: any) => {
+					let u = r.user?.toPublicUser ? r.user.toPublicUser() : r.user;
+					// Ensure flags exist on raw user objects
+					if (u && u.flags == null) u.flags = "0";
+					if (u && u.public_flags == null) u.public_flags = 0;
+					return u;
+				})
 				.filter((u: any) => u && u.id); // filter out invalid users
 			//TODO is this needed? check if users in group dm that are not friends are sent in the READY event
 			users = users.concat(x.channel.recipients as unknown as User[]);
@@ -195,7 +201,11 @@ export async function onIdentify(this: WebSocket, data: Payload) {
 	for (let relation of user.relationships) {
 		const related_user = relation.to;
 		if (!related_user || !related_user.toPublicUser) continue; // skip if related user doesn't exist
-		users.push(related_user.toPublicUser());
+		const publicUser = related_user.toPublicUser();
+		// Ensure flags exist
+		if (publicUser.flags == null) publicUser.flags = "0";
+		if (publicUser.public_flags == null) publicUser.public_flags = 0;
+		users.push(publicUser);
 	}
 
 	setImmediate(async () => {
@@ -292,7 +302,12 @@ export async function onIdentify(this: WebSocket, data: Payload) {
 		// @ts-ignore
 		experiments: experiments, // TODO
 		guild_join_requests: [], // TODO what is this?
-		users: users.filter((x) => x).unique(),
+		users: users.filter((x) => x).unique().map((u: any) => {
+			// Ensure all users in the users array have flags
+			if (u && u.flags == null) u.flags = "0";
+			if (u && u.public_flags == null) u.public_flags = 0;
+			return u;
+		}),
 		merged_members: merged_members,
 		// shard // TODO: only for user sharding
 	};
