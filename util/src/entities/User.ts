@@ -181,6 +181,9 @@ export class User extends BaseClass {
 		PublicUserProjection.forEach((x) => {
 			user[x] = this[x];
 		});
+		// Ensure flags is never undefined/null to prevent client errors
+		if (user.flags == null) user.flags = "0";
+		if (user.public_flags == null) user.public_flags = 0;
 		return user as PublicUser;
 	}
 

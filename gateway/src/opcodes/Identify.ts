@@ -130,7 +130,16 @@ export async function onIdentify(this: WebSocket, data: Payload) {
 			},
 		];
 	}) as PublicMember[][];
-	let guilds = members.map((x) => ({ ...x.guild, joined_at: x.joined_at }));
+	let guilds = members.map((x) => ({
+		...x.guild,
+		joined_at: x.joined_at,
+		// Ensure features is always an array to prevent client errors
+		features: x.guild?.features || [],
+		// Ensure other nullable fields have defaults
+		emojis: x.guild?.emojis || [],
+		stickers: x.guild?.stickers || [],
+		roles: x.guild?.roles || [],
+	})).filter(g => g.id); // filter out null guilds
 
 	// @ts-ignore
 	guilds = guilds.map((guild) => {
