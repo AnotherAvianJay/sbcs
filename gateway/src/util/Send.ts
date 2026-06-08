@@ -58,12 +58,21 @@ export async function Send(socket: WebSocket, data: Payload) {
 		// Check guilds.members - Discord client may access this
 		const guildMembers = ready.guilds?.flatMap((g: any) => g.members || []) || [];
 		const guildMembersMissing = findMissingFlags(guildMembers, "guilds.members");
-		// Also check guilds.roles? No, roles don't have flags
+		// Check guild emojis/stickers user objects
+		const guildEmojis = ready.guilds?.flatMap((g: any) => g.emojis || []) || [];
+		const guildEmojisUserMissing = findMissingFlags(guildEmojis.map((e: any) => e.user ? { user: e.user } : null).filter(Boolean), "guilds.emojis.user");
+		const guildStickers = ready.guilds?.flatMap((g: any) => g.stickers || []) || [];
+		const guildStickersUserMissing = findMissingFlags(guildStickers.map((s: any) => s.user ? { user: s.user } : null).filter(Boolean), "guilds.stickers.user");
+		// Check user_settings - might have user object?
+		const userSettings = ready.user_settings ? [ready.user_settings] : [];
+		console.log("[DEBUG] user_settings fields:", ready.user_settings ? Object.keys(ready.user_settings) : "none");
 		
-		const totalMissing = usersMissing.length + membersMissing.length + relationsMissing.length + channelsMissing.length + guildMembersMissing.length;
+		const totalMissing = usersMissing.length + membersMissing.length + relationsMissing.length + channelsMissing.length + guildMembersMissing.length + guildEmojisUserMissing.length + guildStickersUserMissing.length;
 		if (totalMissing === 0) {
 			console.log("[DEBUG] All user objects have flags!");
 			console.log("[DEBUG] guilds count:", ready.guilds?.length, "guild members count:", guildMembers.length);
+			console.log("[DEBUG] emojis count:", guildEmojis.length, "stickers count:", guildStickers.length);
+			console.log("[DEBUG] Full guild structure:", JSON.stringify(ready.guilds?.[0] ? Object.keys(ready.guilds[0]) : "no guilds"));
 		} else {
 			console.log(`[DEBUG] Total items missing flags: ${totalMissing}`);
 		}
