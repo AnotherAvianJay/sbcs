@@ -11,6 +11,8 @@ const router = Router();
 export interface MessageAcknowledgeSchema {
 	manual?: boolean;
 	mention_count?: number;
+	token?: string | null;
+	flags?: number;
 }
 
 router.post("/", route({ body: "MessageAcknowledgeSchema" }), async (req: Request, res: Response) => {

@@ -1,9 +1,47 @@
 import { Request, Response, Router } from "express";
-import { Member, getPermission, getRights, Role, GuildMemberUpdateEvent, emitEvent, Sticker, Emoji, Rights, Guild } from "@fosscord/util";
+import { Member, getPermission, getRights, Role, GuildMemberUpdateEvent, emitEvent, Rights, Guild, PublicGuildRelations } from "@fosscord/util";
 import { HTTPError } from "lambert-server";
 import { route } from "@fosscord/api";
 
 const router = Router();
+
+async function getGuildMemberJoinPayload(guild_id: string) {
+	const guild = await Guild.findOneOrFail({
+		where: { id: guild_id },
+		relations: PublicGuildRelations,
+	});
+
+	const payload = {
+		...guild,
+		features: guild.features || [],
+		emojis: guild.emojis || [],
+		roles: guild.roles || [],
+		stickers: guild.stickers || [],
+		guild_hashes: {},
+		guild_scheduled_events: [],
+		stage_instances: [],
+		threads: [],
+	};
+
+	const properties = { ...payload } as any;
+	delete properties.channels;
+	delete properties.emojis;
+	delete properties.roles;
+	delete properties.stickers;
+	delete properties.members;
+	delete properties.presences;
+	delete properties.threads;
+	delete properties.guild_scheduled_events;
+
+	return {
+		...payload,
+		properties,
+		additional_fields: {
+			joined_at: undefined,
+			premium_subscriber_count: guild.premium_subscription_count || 0,
+		},
+	};
+}
 
 export interface MemberChangeSchema {
 	roles?: string[];
@@ -62,24 +100,30 @@ router.put("/", route({}), async (req: Request, res: Response) => {
 		// TODO: join others by controller	
 	}
 
-	var guild = await Guild.findOneOrFail({
-		where: { id: guild_id }
-	});
-
-	var emoji = await Emoji.find({
-		where: { guild_id: guild_id }
-	});
-
-	var roles = await Role.find({
-		where: { guild_id: guild_id }
-	});
-
-	var stickers = await Sticker.find({
-		where: { guild_id: guild_id }
-	});
+	const existingMember = await Member.findOne({ where: { id: member_id, guild_id } });
+	if (existingMember) {
+		const payload = await getGuildMemberJoinPayload(guild_id);
+		return res.send({
+			...payload,
+			joined_at: existingMember.joined_at,
+			additional_fields: {
+				...payload.additional_fields,
+				joined_at: existingMember.joined_at,
+			},
+		});
+	}
 
 	await Member.addToGuild(member_id, guild_id);
-	res.send({ ...guild, emojis: emoji, roles: roles, stickers: stickers });
+	const member = await Member.findOneOrFail({ where: { id: member_id, guild_id } });
+	const payload = await getGuildMemberJoinPayload(guild_id);
+	res.send({
+		...payload,
+		joined_at: member.joined_at,
+		additional_fields: {
+			...payload.additional_fields,
+			joined_at: member.joined_at,
+		},
+	});
 });
 
 router.delete("/", route({}), async (req: Request, res: Response) => {

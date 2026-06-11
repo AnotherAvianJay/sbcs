@@ -37,6 +37,7 @@ export const IdentifySchema = {
 	$guild_subscriptions: Boolean,
 	$guild_versions: Object,
 	$capabilities: Number,
+	$flags: Number,
 	$client_state: {
 		$guild_hashes: Object,
 		$guild_versions: Object,
@@ -84,6 +85,7 @@ export interface IdentifySchema {
 	guild_subscriptions?: boolean;
 	guild_versions?: any;
 	capabilities?: number;
+	flags?: number;
 	client_state?: {
 		guild_hashes?: any;
 		guild_versions?: any;

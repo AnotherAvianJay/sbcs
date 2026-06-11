@@ -5,6 +5,7 @@ export interface LazyRequest {
 	threads?: boolean;
 	typing?: true;
 	members?: any[];
+	member_updates?: boolean;
 	thread_member_lists?: any[];
 }
 
@@ -15,5 +16,6 @@ export const LazyRequest = {
 	$typing: Boolean,
 	$threads: Boolean,
 	$members: [] as any[],
+	$member_updates: Boolean,
 	$thread_member_lists: [] as any[],
 };

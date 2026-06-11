@@ -282,15 +282,38 @@ export async function onIdentify(this: WebSocket, data: Payload) {
 		application,
 		user: privateUser,
 		user_settings: user.settings,
+		// @ts-ignore - expected by newer Discord web clients
+		notification_settings: {
+			flags: 0,
+		},
 		// @ts-ignore
 		guilds: guilds.map((x) => {
-			// @ts-ignore
-			x.guild_hashes = {}; // @ts-ignore
+			const properties = { ...x } as any;
+			delete properties.channels;
+			delete properties.emojis;
+			delete properties.roles;
+			delete properties.stickers;
+			delete properties.members;
+			delete properties.presences;
+			delete properties.threads;
+			delete properties.guild_scheduled_events;
+
+			delete (x as any).guild_hashes; // @ts-ignore
 			x.guild_scheduled_events = []; // @ts-ignore
+			x.stage_instances = []; // @ts-ignore
 			x.threads = [];
+			// @ts-ignore - newer Discord web clients expect this wrapper on READY guilds
+			x.properties = properties;
+			// @ts-ignore
+			x.additional_fields = {
+				joined_at: x.joined_at,
+				premium_subscriber_count: x.premium_subscription_count || 0,
+			};
 			return x;
 		}),
 		guild_experiments: [], // TODO
+		// @ts-ignore - expected by newer Discord web clients
+		game_relationships: [],
 		geo_ordered_rtc_regions: [], // TODO
 		relationships: user.relationships.map((x) => x.toPublicRelationship()),
 		read_state: {

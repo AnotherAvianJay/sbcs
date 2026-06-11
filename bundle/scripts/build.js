@@ -45,6 +45,9 @@ if(!fs.existsSync(path.join(__dirname, "..", "node_modules", "exif-be-gone", "in
 	execIn("npm run build", path.join(__dirname, "..", "node_modules", "exif-be-gone"));
 
 console.log(`[${++i}/${steps}] Copying src files...`);
+fs.rmSync(path.join(__dirname, "..", "dist", "api", "assets"), { recursive: true, force: true });
+fs.rmSync(path.join(__dirname, "..", "dist", "api", "client_test"), { recursive: true, force: true });
+fs.rmSync(path.join(__dirname, "..", "dist", "api", "locales"), { recursive: true, force: true });
 copyRecursiveSync(path.join(__dirname, "..", "..", "api", "assets"), path.join(__dirname, "..", "dist", "api", "assets"));
 copyRecursiveSync(path.join(__dirname, "..", "..", "api", "client_test"), path.join(__dirname, "..", "dist", "api", "client_test"));
 copyRecursiveSync(path.join(__dirname, "..", "..", "api", "locales"), path.join(__dirname, "..", "dist", "api", "locales"));

@@ -54,8 +54,9 @@ export interface MessageCreateSchema {
 	content?: string;
 	nonce?: string;
 	channel_id?: string;
+	mobile_network_type?: string;
 	tts?: boolean;
-	flags?: string;
+	flags?: number;
 	embeds?: Embed[];
 	embed?: Embed;
 	// TODO: ^ embed is deprecated in favor of embeds (https://discord.com/developers/docs/resources/channel#message-object)
@@ -80,6 +81,34 @@ export interface MessageCreateSchema {
 	attachments?: any[];
 	sticker_ids?: string[];
 }
+
+export const MessageCreateSchema = {
+	$type: Number,
+	$content: String,
+	$nonce: String,
+	$channel_id: String,
+	$mobile_network_type: String,
+	$tts: Boolean,
+	$flags: Number,
+	$embeds: [Object],
+	$embed: Object,
+	$allowed_mentions: {
+		$parse: [String],
+		$roles: [String],
+		$users: [String],
+		$replied_user: Boolean,
+	},
+	$message_reference: {
+		message_id: String,
+		channel_id: String,
+		$guild_id: String,
+		$fail_if_not_exists: Boolean,
+	},
+	$payload_json: String,
+	$file: Object,
+	$attachments: [Object],
+	$sticker_ids: [String],
+};
 
 // https://discord.com/developers/docs/resources/channel#create-message
 // get messages

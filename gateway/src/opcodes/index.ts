@@ -1,8 +1,10 @@
 import { WebSocket, Payload } from "@fosscord/gateway";
 import { onHeartbeat } from "./Heartbeat";
 import { onIdentify } from "./Identify";
+import { onGuildSubscriptionsBulk } from "./GuildSubscriptionsBulk";
 import { onLazyRequest } from "./LazyRequest";
 import { onPresenceUpdate } from "./PresenceUpdate";
+import { onRequestChannelInfo } from "./RequestChannelInfo";
 import { onRequestGuildMembers } from "./RequestGuildMembers";
 import { onResume } from "./Resume";
 import { onVoiceStateUpdate } from "./VoiceStateUpdate";
@@ -22,4 +24,9 @@ export default {
 	// 10: Hello
 	// 13: Dm_update
 	14: onLazyRequest,
+	37: onGuildSubscriptionsBulk,
+	// 40: QoS Heartbeat used by newer Discord web clients
+	40: onHeartbeat,
+	41: () => undefined,
+	43: onRequestChannelInfo,
 };

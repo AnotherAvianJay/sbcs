@@ -149,7 +149,7 @@
 				};
 			})();
 			window.GLOBAL_ENV = {
-				API_ENDPOINT: "/api",
+				API_ENDPOINT: `//${location.host}/api`,
 				API_VERSION: 9,
 				GATEWAY_ENDPOINT: `${location.protocol === "https:" ? "wss://" : "ws://"}${location.host}`,
 				WEBAPP_ENDPOINT: "",
@@ -183,6 +183,40 @@
 				PUBLIC_PATH: "/assets/"
 			};
 			GLOBAL_ENV.MEDIA_PROXY_ENDPOINT = location.protocol + "//" + GLOBAL_ENV.CDN_HOST;
+			(function() {
+				if (location.protocol !== "http:") return;
+
+				var httpsApiPrefix = `https://${location.host}/api`;
+				var localApiPrefix = `${location.protocol}//${location.host}/api`;
+				var normalizeLocalApiUrl = function(url) {
+					if (typeof url !== "string") return url;
+					if (!url.startsWith(httpsApiPrefix)) return url;
+					return localApiPrefix + url.slice(httpsApiPrefix.length);
+				};
+
+				var originalFetch = window.fetch.bind(window);
+				window.fetch = function(input, init) {
+					if (typeof input === "string") {
+						input = normalizeLocalApiUrl(input);
+					} else if (input instanceof Request) {
+						input = new Request(normalizeLocalApiUrl(input.url), input);
+					}
+					return originalFetch(input, init);
+				};
+
+				var originalXhrOpen = XMLHttpRequest.prototype.open;
+				XMLHttpRequest.prototype.open = function(method, url) {
+					arguments[1] = normalizeLocalApiUrl(url);
+					return originalXhrOpen.apply(this, arguments);
+				};
+
+				if (navigator.sendBeacon) {
+					var originalSendBeacon = navigator.sendBeacon.bind(navigator);
+					navigator.sendBeacon = function(url, data) {
+						return originalSendBeacon(normalizeLocalApiUrl(url), data);
+					};
+				}
+			})();
 			const localStorage = window.localStorage;
 			// TODO: remote auth
 			// window.GLOBAL_ENV.REMOTE_AUTH_ENDPOINT = window.GLOBAL_ENV.GATEWAY_ENDPOINT.replace(/wss?:/, "");
@@ -204,11 +238,11 @@
 				}
 			}, 1000)
 
-			const settings = JSON.parse(localStorage.getItem("UserSettingsStore"));
-			if (settings && settings.locale && settings.locale.length <= 2) {
+			const userSettings = JSON.parse(localStorage.getItem("UserSettingsStore"));
+			if (userSettings && userSettings.locale && userSettings.locale.length <= 2) {
 				// fix client locale wrong and client not loading at all
-				settings.locale = "en-US";
-				localStorage.setItem("UserSettingsStore", JSON.stringify(settings));
+				userSettings.locale = "en-US";
+				localStorage.setItem("UserSettingsStore", JSON.stringify(userSettings));
 			}
 		</script>
 	 	<script src="/assets/checkLocale.js"></script>

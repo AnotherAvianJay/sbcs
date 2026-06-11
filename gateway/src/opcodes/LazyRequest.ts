@@ -125,6 +125,22 @@ export async function onLazyRequest(this: WebSocket, { d }: Payload) {
 	const member_count = await Member.count({ guild_id });
 	const ops = await Promise.all(ranges.map((x) => getMembers(guild_id, x)));
 
+	console.log("[Gateway][LazyRequest] response", {
+		guild_id,
+		channel_id,
+		ranges,
+		ops: ops.map((op) => ({
+			range: op.range,
+			items: op.items.length,
+			groups: op.groups.length,
+			members: op.members.length,
+			first_item_keys: op.items[0] ? Object.keys(op.items[0]) : [],
+		})),
+		member_count,
+		typing,
+		activities,
+	});
+
 	// TODO: unsubscribe member_events that are not in op.members
 
 	ops.forEach((op) => {

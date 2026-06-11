@@ -14,11 +14,14 @@
             "channel_id": {
                 "type": "string"
             },
+            "mobile_network_type": {
+                "type": "string"
+            },
             "tts": {
                 "type": "boolean"
             },
             "flags": {
-                "type": "string"
+                "type": "integer"
             },
             "embeds": {
                 "type": "array",
@@ -2570,6 +2573,12 @@
                 "type": "boolean"
             },
             "mention_count": {
+                "type": "integer"
+            },
+            "token": {
+                "type": "string"
+            },
+            "flags": {
                 "type": "integer"
             }
         },
@@ -14240,6 +14249,9 @@
                     4
                 ],
                 "type": "number"
+			},
+			"confirm_stranger_request": {
+				"type": "boolean"
             }
         },
         "additionalProperties": false,

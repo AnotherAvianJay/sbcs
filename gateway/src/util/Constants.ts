@@ -23,6 +23,11 @@ export enum OPCODES {
 	Stream_Ping = 21,
 	Stream_Set_Paused = 22,
 	Request_Application_Commands = 24,
+	Request_Channel_Statuses = 36,
+	Guild_Subscriptions_Bulk = 37,
+	Set_QoS = 40,
+	Client_Init_Session = 41,
+	Request_Channel_Info = 43,
 }
 export enum CLOSECODES {
 	Unknown_error = 4000,

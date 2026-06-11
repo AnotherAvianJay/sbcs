@@ -47,18 +47,21 @@ function _generateName() {
 
 var token = JSON.parse(localStorage.getItem("token"));
 if (!token && location.pathname !== "/login" && location.pathname !== "/register") {
-	fetch(`${window.GLOBAL_ENV.API_ENDPOINT}/auth/register`, {
+	const apiEndpoint = window.GLOBAL_ENV?.API_ENDPOINT || "/api";
+	fetch(`${apiEndpoint}/auth/register`, {
 		method: "POST",
 		headers: { "content-type": "application/json" },
-		body: JSON.stringify({ username: `${_generateName()}`, consent: true }) //${Date.now().toString().slice(-4)}
+		body: JSON.stringify({
+			username: `${_generateName()}`,
+			consent: true,
+			date_of_birth: "2000-01-01"
+		}) //${Date.now().toString().slice(-4)}
 	})
 		.then((x) => x.json())
 		.then((x) => {
 			localStorage.setItem("token", `"${x.token}"`);
-			if (!window.localStorage) {
-				// client already loaded -> need to reload to apply the newly registered user token
-				location.reload();
-			}
+			// Client boot may already be in progress; reload so the new token is picked up consistently.
+			location.reload();
 		});
 }
 })();

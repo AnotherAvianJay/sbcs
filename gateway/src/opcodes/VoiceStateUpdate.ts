@@ -18,6 +18,7 @@ import {
 export async function onVoiceStateUpdate(this: WebSocket, data: Payload) {
 	check.call(this, VoiceStateUpdateSchema, data.d);
 	const body = data.d as VoiceStateUpdateSchema;
+	const isLeavingVoice = body.guild_id === null && body.channel_id === null;
 
 	let voiceState: VoiceState;
 	try {
@@ -49,6 +50,8 @@ export async function onVoiceStateUpdate(this: WebSocket, data: Payload) {
 		if (body.guild_id === null) body.guild_id = voiceState.guild_id;
 		voiceState.assign(body);
 	} catch (error) {
+		if (isLeavingVoice) return;
+
 		voiceState = new VoiceState({
 			...body,
 			user_id: this.user_id,

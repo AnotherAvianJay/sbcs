@@ -8,5 +8,6 @@
 
 var token = JSON.parse(localStorage.getItem("token"));
 if (!token && location.pathname !== "/login" && location.pathname !== "/register") {
-	document.getElementById("logincss").remove();
+	const loginCss = document.getElementById("logincss");
+	if (loginCss) loginCss.remove();
 }

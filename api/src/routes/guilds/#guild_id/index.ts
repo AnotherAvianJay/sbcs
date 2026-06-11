@@ -1,5 +1,5 @@
 import { Request, Response, Router } from "express";
-import { DiscordApiErrors, emitEvent, getPermission, getRights, Guild, GuildUpdateEvent, handleFile, Member } from "@fosscord/util";
+import { DiscordApiErrors, emitEvent, getPermission, Guild, GuildUpdateEvent, handleFile, Member } from "@fosscord/util";
 import { HTTPError } from "lambert-server";
 import { route } from "@fosscord/api";
 import "missing-native-js-functions";
@@ -43,10 +43,9 @@ router.patch("/", route({ body: "GuildUpdateSchema"}), async (req: Request, res:
 	const { guild_id } = req.params;
 	
 	
-	const rights = await getRights(req.user_id);
 	const permission = await getPermission(req.user_id, guild_id);
 	
-	if (!rights.has("MANAGE_GUILDS")||!permission.has("MANAGE_GUILD"))
+	if (!permission.has("MANAGE_GUILD"))
 		throw DiscordApiErrors.MISSING_PERMISSIONS.withParams("MANAGE_GUILD");
 	
 	// TODO: guild update check image

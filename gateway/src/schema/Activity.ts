@@ -3,6 +3,7 @@ import { Activity, Status } from "@fosscord/util";
 export const ActivitySchema = {
 	afk: Boolean,
 	status: String,
+	$flags: Number,
 	$activities: [
 		{
 			name: String,
@@ -46,6 +47,7 @@ export const ActivitySchema = {
 export interface ActivitySchema {
 	afk: boolean;
 	status: Status;
+	flags?: number;
 	activities?: Activity[];
 	since?: number; // unix time (in milliseconds) of when the client went idle, or null if the client is not idle
 }

@@ -15,13 +15,13 @@ import { route } from "@fosscord/api";
 
 const router = Router();
 
-const userProjection: (keyof User)[] = ["relationships", ...PublicUserProjection];
+const userProjection: (keyof User)[] = [...PublicUserProjection];
 
 router.get("/", route({}), async (req: Request, res: Response) => {
 	const user = await User.findOneOrFail({
 		where: { id: req.user_id },
 		relations: ["relationships", "relationships.to"],
-		select: ["relationships"]
+		select: userProjection
 	});
 
 	//TODO DTO
@@ -39,6 +39,7 @@ router.get("/", route({}), async (req: Request, res: Response) => {
 
 export interface RelationshipPutSchema {
 	type?: RelationshipType;
+	confirm_stranger_request?: boolean;
 }
 
 router.put("/:id", route({ body: "RelationshipPutSchema" }), async (req: Request, res: Response) => {

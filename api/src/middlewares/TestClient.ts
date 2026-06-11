@@ -1,11 +1,10 @@
 import express, { Request, Response, Application } from "express";
-import fs, { writeFile } from "fs";
+import fs from "fs";
 import path from "path";
-import fetch, { Response as FetchResponse, Headers } from "node-fetch";
+import fetch, { Headers } from "node-fetch";
 import ProxyAgent from 'proxy-agent';
 import { Config } from "@fosscord/util";
 import { AssetCacheItem } from "../util/entities/AssetCacheItem"
-import { FileLogger } from "typeorm";
 
 export default function TestClient(app: Application) {
 	const agent = new ProxyAgent();
@@ -19,64 +18,86 @@ export default function TestClient(app: Application) {
 
 	//load asset cache
 	let newAssetCache: Map<string, AssetCacheItem> = new Map<string, AssetCacheItem>();
-	if(!fs.existsSync(path.join(__dirname, "..", "..", "assets", "cache"))) {
-		fs.mkdirSync(path.join(__dirname, "..", "..", "assets", "cache"));
+	const assetCachePath = path.join(__dirname, "..", "..", "assets", "cache");
+	const assetCacheIndexPath = path.join(assetCachePath, "index.json");
+	if(!fs.existsSync(assetCachePath)) {
+		fs.mkdirSync(assetCachePath, { recursive: true });
 	}
-	if(fs.existsSync(path.join(__dirname, "..", "..", "assets", "cache", "index.json"))) {
-		let rawdata = fs.readFileSync(path.join(__dirname, "..", "..", "assets", "cache", "index.json"));
+	if(fs.existsSync(assetCacheIndexPath)) {
+		let rawdata = fs.readFileSync(assetCacheIndexPath);
 		newAssetCache = new Map<string, AssetCacheItem>(Object.entries(JSON.parse(rawdata.toString())));
 	}
+
+	const persistAssetCache = () => {
+		fs.writeFileSync(assetCacheIndexPath, JSON.stringify(Object.fromEntries(newAssetCache), null, 4));
+	};
+
+	const fetchAsset = async (req: Request) => {
+		const response = await fetch(`https://discord.com/assets/${req.params.file}`, {
+			agent,
+			// @ts-ignore
+			headers: {
+				...req.headers
+			}
+		});
+		const assetCacheItem = new AssetCacheItem(req.params.file);
+		const filePath = path.join(assetCachePath, req.params.file);
+		const fileBuffer = await response.buffer();
+
+		assetCacheItem.Headers = Object.fromEntries(stripHeaders(response.headers));
+		assetCacheItem.FilePath = filePath;
+		assetCacheItem.Key = req.params.file;
+
+		fs.mkdirSync(path.dirname(filePath), { recursive: true });
+		fs.writeFileSync(filePath, fileBuffer);
+		newAssetCache.set(req.params.file, assetCacheItem);
+		persistAssetCache();
+
+		return { assetCacheItem, fileBuffer };
+	};
 
 	app.use("/assets", express.static(path.join(__dirname, "..", "..", "assets")));	
 	app.get("/assets/:file", async (req: Request, res: Response) => {
 		delete req.headers.host;
-		let response: FetchResponse;
-		let buffer: Buffer;
+		let fileBuffer: Buffer;
 		let assetCacheItem: AssetCacheItem = new AssetCacheItem(req.params.file);
-		if(newAssetCache.has(req.params.file)){
-			assetCacheItem = newAssetCache.get(req.params.file)!;
+		const cachedAsset = newAssetCache.get(req.params.file);
+		const hasUsableCachedFile = !!cachedAsset?.FilePath && fs.existsSync(cachedAsset.FilePath);
+		if (cachedAsset && hasUsableCachedFile) {
+			assetCacheItem = cachedAsset;
+			fileBuffer = fs.readFileSync(assetCacheItem.FilePath);
 			assetCacheItem.Headers.forEach((value: any, name: any) => {
 				res.set(name, value);
 			});
 		}
 		else {
-			response = await fetch(`https://discord.com/assets/${req.params.file}`, {
-				agent,
-				// @ts-ignore
-				headers: {
-					...req.headers
-				}
-			});
-			
-			//set cache info
-			assetCacheItem.Headers = Object.fromEntries(stripHeaders(response.headers));
-			assetCacheItem.FilePath = path.join(__dirname, "..", "..", "assets", "cache", req.params.file);
-			assetCacheItem.Key = req.params.file;
-			//add to cache and save
-			newAssetCache.set(req.params.file, assetCacheItem);
-			fs.writeFileSync(path.join(__dirname, "..", "..", "assets", "cache", "index.json"), JSON.stringify(Object.fromEntries(newAssetCache), null, 4));
-			//download file
-			fs.writeFileSync(assetCacheItem.FilePath, await response.buffer());
+			if (cachedAsset && !hasUsableCachedFile) {
+				newAssetCache.delete(req.params.file);
+				persistAssetCache();
+			}
+			({ assetCacheItem, fileBuffer } = await fetchAsset(req));
 		}
 		
 		assetCacheItem.Headers.forEach((value: string, name: string) => {
 			res.set(name, value);
 		});
-		return res.send(fs.readFileSync(assetCacheItem.FilePath));
+		return res.send(fileBuffer);
 	});
 	app.get("/developers*", (_req: Request, res: Response) => {
 		const { useTestClient } = Config.get().client;
-		res.set("Cache-Control", "public, max-age=" + 60 * 60 * 24);
-		res.set("content-type", "text/html");
+		setHtmlHeaders(res);
 
 		if(!useTestClient) return res.send("Test client is disabled on this instance. Use a stand-alone client to connect this instance.")
 		
 		res.send(fs.readFileSync(path.join(__dirname, "..", "..", "client_test", "developers.html"), { encoding: "utf8" }));
 	});
+	app.get(["/detectables/games.json", "/detectables/non-games.json"], (_req: Request, res: Response) => {
+		res.set("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0");
+		res.json([]);
+	});
 	app.get("*", (req: Request, res: Response) => {
 		const { useTestClient } = Config.get().client;
-		res.set("Cache-Control", "public, max-age=" + 60 * 60 * 24);
-		res.set("content-type", "text/html");
+		setHtmlHeaders(res);
 
 		if(req.url.startsWith("/api") || req.url.startsWith("/__development")) return;
 
@@ -89,18 +110,32 @@ export default function TestClient(app: Application) {
 	
 }
 
+function setHtmlHeaders(res: Response) {
+	res.set("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0");
+	res.set("Pragma", "no-cache");
+	res.set("Expires", "0");
+	res.set("content-type", "text/html");
+}
+
 function applyEnv(html: string): string {
 	const CDN_ENDPOINT = (Config.get().cdn.endpointClient || Config.get()?.cdn.endpointPublic || process.env.CDN || "").replace(
 		/(https?)?(:\/\/?)/g,
 		""
 	);
 	const GATEWAY_ENDPOINT = Config.get().gateway.endpointClient || Config.get()?.gateway.endpointPublic || process.env.GATEWAY || "";
+	const WEBAPP_ENDPOINT = (process.env.WEBAPP_ENDPOINT || "${location.host}").replace(
+		/(https?)?(:\/\/?)/g,
+		""
+	);
 
 	if (CDN_ENDPOINT) {
 		html = html.replace(/CDN_HOST: .+/, `CDN_HOST: \`${CDN_ENDPOINT}\`,`);
 	}
 	if (GATEWAY_ENDPOINT) {
 		html = html.replace(/GATEWAY_ENDPOINT: .+/, `GATEWAY_ENDPOINT: \`${GATEWAY_ENDPOINT}\`,`);
+	}
+	if (WEBAPP_ENDPOINT) {
+		html = html.replace(/WEBAPP_ENDPOINT: .+/, `WEBAPP_ENDPOINT: \`${WEBAPP_ENDPOINT}\`,`);
 	}
 	return html;
 }
